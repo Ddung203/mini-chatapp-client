@@ -1,5 +1,6 @@
 <script setup>
   import { onMounted, ref, watch } from "vue";
+  import VirtualScroller from "primevue/virtualscroller";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import getReq from "../api/get.js";
   import postReq from "../api/post.js";
@@ -60,24 +61,26 @@
 <template>
   <div class="w-1/4 min-h-[70vh] p-4 bg-gray-200 sidebar">
     <h2 class="mb-4 text-xl font-bold">Danh sách bạn bè</h2>
-    <ul
-      class="flex flex-col max-h-[530px] bg-white p-3 overflow-y-scroll overflow-x-hidden items-center justify-center"
-      v-if="store.isLoggedIn"
-    >
-      <li
-        v-for="user in users"
-        :key="user.id"
-        class="mb-2"
+    <div class="max-h-[530px] w-[240px] overflow-y-scroll overflow-x-hidden">
+      <ul
+        class="flex flex-col p-3 bg-white"
+        v-if="store.isLoggedIn"
       >
-        <Button
-          severity="primary"
-          class="w-[200px]"
-          :label="user.username"
-          icon="pi pi-user"
-          @click="callAPIGetMessages(user.username)"
-        />
-      </li>
-    </ul>
+        <li
+          v-for="user in users"
+          :key="user.id"
+          class="pb-2"
+        >
+          <Button
+            severity="primary"
+            class="w-[200px]"
+            :label="user.username"
+            icon="pi pi-user"
+            @click="callAPIGetMessages(user.username)"
+          />
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 

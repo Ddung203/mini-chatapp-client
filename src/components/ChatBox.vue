@@ -100,23 +100,41 @@
       v-if="store.isLoggedIn"
       class="flex-1 p-4 overflow-y-auto messages"
     >
-      <p
+      <div
+        class="flex items-center justify-center gap-16 mb-3"
         v-if="storeMessage.messages[0]?.conversationId"
-        class="pb-4"
       >
-        Mã phòng:
-        <strong>{{ storeMessage.messages[0]?.conversationId }}</strong>
-      </p>
+        <p class="">
+          Mã phòng:
+          <strong>{{ storeMessage.messages[0]?.conversationId }}</strong>
+        </p>
+
+        <!--  -->
+        <Button
+          severity="primary"
+          class=""
+          :label="storeMessage.receiverUsername"
+          icon="pi pi-user"
+        />
+        <!--  -->
+      </div>
+
       <div
         v-for="message in storeMessage.messages"
         :key="message.id"
         class="mb-2"
       >
-        <strong>{{ message.senderUsername }}</strong
+        <strong
+          :class="{ 'text-red-400': message.senderUsername === store.username }"
+        >
+          <span>{{ message.senderUsername }}</span>
+          <span v-if="message.senderUsername === store.username">
+            (Me)</span
+          ></strong
         >: {{ message.content }}
       </div>
     </div>
-    <div class="flex gap-2 p-4 border-t border-gray-300 input-box">
+    <form class="flex gap-2 p-4 border-t border-gray-300 input-box">
       <InputText
         class="w-full p-2 border rounded"
         type="text"
@@ -126,12 +144,14 @@
       <Button
         class="w-24"
         type="submit"
+        icon="pi pi-send"
+        iconPos="right"
         label="Gửi"
         @click="sendMessage"
         rounded
         :disabled="!store.isLoggedIn || newMessage.trim() === ''"
       />
-    </div>
+    </form>
   </div>
 </template>
 

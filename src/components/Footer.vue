@@ -5,7 +5,7 @@
 <template>
   <div>
     <footer
-      class="footer w-[100vw] h-14 flex items-center justify-center bg-white"
+      class="border-t border-t-[#ccc] mt-[1px] footer w-[100vw] h-14 flex items-center justify-center bg-white"
     >
       <p class="text-black">
         Copyright © 2024
