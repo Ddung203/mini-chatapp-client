@@ -2,9 +2,15 @@ import { createWebHistory, createRouter } from "vue-router";
 
 import HomeView from "../views/HomeView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
+import getReq from "../api/get.js";
 
 const routes = [
-  { path: "/", name: "home", component: HomeView },
+  {
+    path: "/",
+    name: "home",
+    component: HomeView,
+  },
+
   { path: "/:catchAll(.*)", component: NotFoundView },
 ];
 

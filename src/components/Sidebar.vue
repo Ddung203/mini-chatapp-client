@@ -3,6 +3,7 @@
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import getReq from "../api/get.js";
   import postReq from "../api/post.js";
+  import router from "../routes/index.js";
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
@@ -14,7 +15,9 @@
       const response = await getReq("/user/except");
       users.value = response;
     } catch (error) {
-      console.log("error :>> ", error);
+      // console.log("error :>> ", error);
+      store.setLoggedOut();
+      // router.push({ path: "/" });
     }
   };
 
@@ -23,7 +26,6 @@
       storeMessage.setReceiverUsername(un);
 
       const url = `/conversation/create`;
-
       const res = await postReq(url, {
         participant1Username: store.username,
         participant2Username: un,
@@ -33,7 +35,9 @@
 
       storeMessage.setCurRoomID(res?.id);
     } catch (error) {
-      console.log("error :>> ", error);
+      // console.log("error 2:>> ", error);
+      store.setLoggedOut();
+      // router.push({ path: "/" });
     }
   };
 
@@ -57,7 +61,7 @@
   <div class="w-1/4 min-h-[70vh] p-4 bg-gray-200 sidebar">
     <h2 class="mb-4 text-xl font-bold">Danh sách bạn bè</h2>
     <ul
-      class="flex flex-col items-center justify-center"
+      class="flex flex-col max-h-[530px] bg-white p-3 overflow-y-scroll overflow-x-hidden items-center justify-center"
       v-if="store.isLoggedIn"
     >
       <li
@@ -66,6 +70,7 @@
         class="mb-2"
       >
         <Button
+          severity="primary"
           class="w-[200px]"
           :label="user.username"
           icon="pi pi-user"

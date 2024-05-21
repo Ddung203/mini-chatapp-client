@@ -44,8 +44,8 @@
 
       inputUsername.value = "";
       inputPassword.value = "";
-    } catch (error) {
-      notification(toast, "error", "Error", error.message, 1500);
+    } catch (e) {
+      notification(toast, "error", "Error", e.response?.data?.error, 2000);
     }
   };
 
@@ -68,19 +68,16 @@
         password: inputPassword.value,
       });
 
-      if (response?.data?.error !== "")
-        notification(toast, "error", "Lỗi", response?.data?.error, 2500);
-      else
-        notification(
-          toast,
-          "success",
-          "Thông báo",
-          "Đăng ký tài khoản thành công!",
-          1000
-        );
-    } catch (error) {
-      // console.log("error :>> ", error);
-      notification(toast, "success", "Thông báo", error, 1000);
+      notification(
+        toast,
+        "success",
+        "Thông báo",
+        "Đăng ký tài khoản thành công!",
+        1000
+      );
+    } catch (e) {
+      notification(toast, "error", "Thông báo", e.response?.data?.error, 1000);
+      return;
     }
   };
 </script>

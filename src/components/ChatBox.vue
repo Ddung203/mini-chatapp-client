@@ -2,6 +2,11 @@
   import { onBeforeUnmount, onMounted, ref, watch } from "vue";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import { io } from "socket.io-client";
+  import router from "../routes/index";
+  import { useToast } from "primevue/usetoast";
+  import notification from "../utils/notification.js";
+
+  const toast = useToast();
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
@@ -22,12 +27,14 @@
   };
 
   const sendMessage = () => {
+    const token = localStorage.getItem("token");
     if (
       !socket.value ||
       !storeMessage.curRoomID ||
       newMessage.value.trim() === ""
-    )
+    ) {
       return;
+    }
 
     const message = {
       roomID: storeMessage.curRoomID,
@@ -40,13 +47,20 @@
       },
     };
 
+    socket.value.emit("sendToken", { roomID: storeMessage.curRoomID, token });
     socket.value.emit("sendMessage", message);
-    newMessage.value = "";
 
     socket.value.on("chat message", (messages) => {
       storeMessage.setMessages(messages);
     });
-    // storeMessage.messages.push(message.data);
+
+    socket.value.on("token status", (status) => {
+      if (!status) {
+        router.go(0);
+      }
+    });
+
+    newMessage.value = "";
   };
 
   // Watch for changes in curRoomID and join the new room
@@ -66,10 +80,6 @@
 
     socket.value.on("connect", () => {
       // console.log("socket.id :>> ", socket.value.id);
-      // Tham gia vào phòng hiện tại nếu đã có
-      // if (storeMessage.curRoomID && storeMessage.curRoomID >= 0) {
-      //   joinRoom(storeMessage.curRoomID);
-      // }
     });
 
     socket.value.on("roomList", (roomList) => {

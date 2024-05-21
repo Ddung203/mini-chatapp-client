@@ -1,5 +1,6 @@
 <script setup>
   import Header from "../components/Header.vue";
+  import Footer from "../components/Footer.vue";
   import Sidebar from "../components/Sidebar.vue";
   import ChatBox from "../components/ChatBox.vue";
 </script>
@@ -15,6 +16,7 @@
         <ChatBox />
       </div>
     </div>
+    <Footer />
   </div>
 </template>
 
