@@ -5,6 +5,7 @@
   import router from "../routes/index";
   import { useToast } from "primevue/usetoast";
   import notification from "../utils/notification.js";
+  import RSA from "../rsa/rsaMD.js";
 
   const toast = useToast();
 
@@ -35,6 +36,12 @@
     ) {
       return;
     }
+
+    const { e, n } = JSON.parse(localStorage.getItem("participant2publicKey"));
+
+    console.log("newMessage.value :>> ", RSA.maHoaRSA(newMessage.value, e, n));
+
+    const encryptedMessage = RSA.maHoaRSA(newMessage.value, e, n);
 
     const message = {
       roomID: storeMessage.curRoomID,

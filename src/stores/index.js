@@ -15,6 +15,7 @@ const useConditionStore = defineStore("condition", {
     isLoggedIn: getLocalStorageItem("isLoggedIn", false),
     username: getLocalStorageItem("username", ""),
     token: localStorage.getItem("token") || "",
+    participant1publicKey: getLocalStorageItem("participant1publicKey", ""),
   }),
   getters: {
     getUsername: (state) => state.username,
@@ -33,6 +34,7 @@ const useConditionStore = defineStore("condition", {
         "username",
         "curRoomID",
         "receiverUsername",
+        "participant1publicKey",
       ].forEach((item) => localStorage.removeItem(item));
 
       this.$reset(); // Pinia's reset function
@@ -40,6 +42,10 @@ const useConditionStore = defineStore("condition", {
     setUsername(username) {
       setLocalStorageItem("username", username);
       this.username = username;
+    },
+    setParticipant1publicKey(publicKey) {
+      setLocalStorageItem("participant1publicKey", publicKey);
+      this.participant1publicKey = publicKey;
     },
   },
 });

@@ -22,7 +22,8 @@
     }
   };
 
-  const callAPIGetMessages = async (un) => {
+  const callAPIGetMessages = async (un, participant2publicKey) => {
+    localStorage.setItem("participant2publicKey", participant2publicKey);
     try {
       storeMessage.setReceiverUsername(un);
 
@@ -30,6 +31,8 @@
       const res = await postReq(url, {
         participant1Username: store.username,
         participant2Username: un,
+        participant1publicKey: store.participant1publicKey,
+        participant2publicKey: participant2publicKey,
       });
 
       if (!!res?.id === false) return;
@@ -76,7 +79,7 @@
             class="w-[200px]"
             :label="user.username"
             icon="pi pi-user"
-            @click="callAPIGetMessages(user.username)"
+            @click="callAPIGetMessages(user.username, user.publicKey)"
           />
         </li>
       </ul>

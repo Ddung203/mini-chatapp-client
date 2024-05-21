@@ -26,11 +26,14 @@
         password: inputPassword.value,
       });
 
-      if (response?.data?.error) throw new Error(response?.data?.error);
+      console.log("response :>> ", response);
+
+      // if (response?.data?.error) throw new Error(response?.data?.error);
 
       if (response?.token && response?.token.length > 0) {
         store.setLoggedIn();
         store.setUsername(response.username);
+        store.setParticipant1publicKey(response.participant1publicKey);
         localStorage.setItem("token", response.token);
 
         notification(
@@ -45,6 +48,7 @@
       inputUsername.value = "";
       inputPassword.value = "";
     } catch (e) {
+      console.log("e :>> ", e);
       notification(toast, "error", "Error", e.response?.data?.error, 2000);
     }
   };
