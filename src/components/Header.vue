@@ -3,6 +3,7 @@
   import { useConditionStore } from "../stores/index.js";
   import postReq from "../api/post.js";
   import { useToast } from "primevue/usetoast";
+  import notification from "../utils/notification.js";
 
   const toast = useToast();
   const store = useConditionStore();
@@ -13,45 +14,74 @@
   const loginHandler = async () => {
     try {
       if (
-        inputUsername.value.trim() !== "" ||
-        inputPassword.value.trim() !== ""
+        inputUsername.value.trim() === "" ||
+        inputPassword.value.trim() === ""
       ) {
-        const response = await postReq("/auth/login", {
-          username: inputUsername.value,
-          password: inputPassword.value,
-        });
-
-        if (response?.data?.error) throw new Error(response?.data?.error);
-
-        if (response?.token && response?.token.length > 0) {
-          store.setUsername(response.username);
-          store.setLoggedIn();
-          localStorage.setItem("token", response.token);
-
-          //
-          toast.add({
-            severity: "success",
-            summary: "Thông báo",
-            detail: "Đăng nhập thành công!",
-            life: 2000,
-          });
-        }
-
-        inputUsername.value = "";
-        inputPassword.value = "";
+        notification(toast, "error", "Thông báo", "Đăng nhập thất bại!", 1500);
+        return;
       }
-    } catch (error) {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: error.message,
-        life: 2000,
+
+      const response = await postReq("/auth/login", {
+        username: inputUsername.value,
+        password: inputPassword.value,
       });
+
+      if (response?.data?.error) throw new Error(response?.data?.error);
+
+      if (response?.token && response?.token.length > 0) {
+        store.setLoggedIn();
+        store.setUsername(response.username);
+        localStorage.setItem("token", response.token);
+
+        notification(
+          toast,
+          "success",
+          "Thông báo",
+          "Đăng nhập thành công!",
+          1500
+        );
+      }
+
+      inputUsername.value = "";
+      inputPassword.value = "";
+    } catch (error) {
+      notification(toast, "error", "Error", error.message, 1500);
     }
   };
 
   const logoutHandler = async () => {
     store.setLoggedOut();
+  };
+
+  const registerHandler = async () => {
+    try {
+      if (
+        inputUsername.value.trim() === "" ||
+        inputPassword.value.trim() === ""
+      ) {
+        notification(toast, "error", "Lỗi", "Đăng ký thất bại", 2500);
+        return;
+      }
+
+      const response = await postReq("/auth/register", {
+        username: inputUsername.value,
+        password: inputPassword.value,
+      });
+
+      if (response?.data?.error !== "")
+        notification(toast, "error", "Lỗi", response?.data?.error, 2500);
+      else
+        notification(
+          toast,
+          "success",
+          "Thông báo",
+          "Đăng ký tài khoản thành công!",
+          1000
+        );
+    } catch (error) {
+      // console.log("error :>> ", error);
+      notification(toast, "success", "Thông báo", error, 1000);
+    }
   };
 </script>
 
@@ -96,6 +126,7 @@
           label="Đăng ký"
           severity="secondary"
           rounded
+          @click="registerHandler"
         />
 
         <Button

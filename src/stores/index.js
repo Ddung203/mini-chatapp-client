@@ -1,31 +1,44 @@
 import { defineStore } from "pinia";
 
+// Helper functions
+function getLocalStorageItem(key, defaultValue) {
+  const value = localStorage.getItem(key);
+  return value ? JSON.parse(value) : defaultValue;
+}
+
+function setLocalStorageItem(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 const useConditionStore = defineStore("condition", {
   state: () => ({
-    isLoggedIn: JSON.parse(localStorage.getItem("isLoggedIn")) || false,
-    username: JSON.parse(localStorage.getItem("username")) || "",
+    isLoggedIn: getLocalStorageItem("isLoggedIn", false),
+    username: getLocalStorageItem("username", ""),
     token: localStorage.getItem("token") || "",
   }),
   getters: {
     getUsername: (state) => state.username,
-
     getToken: (state) => state.token,
-
     isAuthenticated: (state) => !!state.token && state.isLoggedIn,
   },
   actions: {
     setLoggedIn() {
-      localStorage.setItem("isLoggedIn", true);
+      setLocalStorageItem("isLoggedIn", true);
       this.isLoggedIn = true;
     },
     setLoggedOut() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("username");
-      this.isLoggedIn = false;
+      [
+        "token",
+        "isLoggedIn",
+        "username",
+        "curRoomID",
+        "receiverUsername",
+      ].forEach((item) => localStorage.removeItem(item));
+
+      this.$reset(); // Pinia's reset function
     },
     setUsername(username) {
-      localStorage.setItem("username", JSON.stringify(username));
+      setLocalStorageItem("username", username);
       this.username = username;
     },
   },
@@ -34,12 +47,21 @@ const useConditionStore = defineStore("condition", {
 const useMessageStore = defineStore("message", {
   state: () => ({
     messages: [],
+    curRoomID: localStorage.getItem("curRoomID") || "",
+    receiverUsername: getLocalStorageItem("receiverUsername", ""),
   }),
   getters: {},
   actions: {
     setMessages(messages) {
-      // localStorage.setItem("messages", JSON.stringify(messages));
       this.messages = messages;
+    },
+    setCurRoomID(curRoomID) {
+      localStorage.setItem("curRoomID", curRoomID);
+      this.curRoomID = curRoomID;
+    },
+    setReceiverUsername(receiverUsername) {
+      setLocalStorageItem("receiverUsername", receiverUsername);
+      this.receiverUsername = receiverUsername;
     },
   },
 });

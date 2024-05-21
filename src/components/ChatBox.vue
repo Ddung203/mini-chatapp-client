@@ -1,5 +1,5 @@
 <script setup>
-  import { onBeforeUnmount, onMounted, ref } from "vue";
+  import { onBeforeUnmount, onMounted, ref, watch } from "vue";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import { io } from "socket.io-client";
 
@@ -8,46 +8,72 @@
 
   const newMessage = ref("");
   const socket = ref(null);
+  const rooms = ref([]);
 
-  function computeUserIdFromHeaders(headers) {
-    console.log("headers :>> ", headers);
-    return storeMessage.messages[0]?.conversationId;
-  }
+  const joinRoom = (roomID) => {
+    if (!socket.value) return;
 
-  const sendMessage = () => {
-    if (newMessage.value.trim() !== "") {
-      const message = {
-        id: storeMessage.messages.length + 1,
-        user: "Me",
-        text: newMessage.value,
-      };
-      storeMessage.messages.push(message);
-      socket.value.emit("sendMessage", message);
-      newMessage.value = "";
-    }
+    socket.value.emit("joinRoom", roomID);
+    storeMessage.setMessages([]);
+
+    socket.value.on("history", (messages) => {
+      storeMessage.setMessages(messages);
+    });
   };
 
+  const sendMessage = () => {
+    if (
+      !socket.value ||
+      !storeMessage.curRoomID ||
+      newMessage.value.trim() === ""
+    )
+      return;
+
+    const message = {
+      roomID: storeMessage.curRoomID,
+      data: {
+        content: newMessage.value,
+        conversationId: storeMessage.curRoomID,
+        id: socket.value.id,
+        senderUsername: store.username,
+        receiverUsername: storeMessage.receiverUsername,
+      },
+    };
+
+    socket.value.emit("sendMessage", message);
+    newMessage.value = "";
+
+    socket.value.on("chat message", (messages) => {
+      storeMessage.setMessages(messages);
+    });
+    // storeMessage.messages.push(message.data);
+  };
+
+  // Watch for changes in curRoomID and join the new room
+  watch(
+    () => storeMessage.curRoomID,
+    (newRoomID) => {
+      if (newRoomID) {
+        // console.log("newRoomID :>> ", newRoomID);
+        joinRoom(newRoomID);
+      }
+    }
+  );
+
+  // 1
   onMounted(() => {
     socket.value = io("http://localhost:8181/");
 
     socket.value.on("connect", () => {
-      console.log("socket.id :>> ", socket.value.id);
-      console.log(socket.value.connected);
+      // console.log("socket.id :>> ", socket.value.id);
+      // Tham gia vào phòng hiện tại nếu đã có
+      // if (storeMessage.curRoomID && storeMessage.curRoomID >= 0) {
+      //   joinRoom(storeMessage.curRoomID);
+      // }
     });
 
-    socket.value.on("disconnect", () => {
-      console.log("disconnect");
-      console.log(socket.value.connected);
-    });
-
-    socket.value.on("history", (history) => {
-      console.log("history :>> ", history);
-      storeMessage.messages = history;
-    });
-
-    socket.value.on("chat message", (message) => {
-      console.log("chat message :>> ", message);
-      storeMessage.messages.push(message);
+    socket.value.on("roomList", (roomList) => {
+      rooms.value = roomList;
     });
   });
 

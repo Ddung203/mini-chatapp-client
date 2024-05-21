@@ -2,6 +2,7 @@
   import { onMounted, ref, watch } from "vue";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import getReq from "../api/get.js";
+  import postReq from "../api/post.js";
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
@@ -17,16 +18,20 @@
     }
   };
 
-  // const chooseUser = ref("");
-
   const callAPIGetMessages = async (un) => {
     try {
-      const url = `/message/users?senderUsername=${store.username}&receiverUsername=${un}`;
+      storeMessage.setReceiverUsername(un);
 
-      const response = await getReq(url);
+      const url = `/conversation/create`;
 
-      // console.log("response :>> ", response);
-      storeMessage.setMessages(response);
+      const res = await postReq(url, {
+        participant1Username: store.username,
+        participant2Username: un,
+      });
+
+      if (!!res?.id === false) return;
+
+      storeMessage.setCurRoomID(res?.id);
     } catch (error) {
       console.log("error :>> ", error);
     }
