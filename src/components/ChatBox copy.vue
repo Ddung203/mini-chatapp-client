@@ -21,7 +21,7 @@
 
     socket.value.on("history", (messages) => {
       console.log("history: messages :>> ", messages);
-      handleMessage(messages);
+      storeMessage.setMessages(messages);
     });
   };
 
@@ -67,13 +67,10 @@
     messages.forEach((message) => {
       if (message.senderUsername === storeMessage.receiverUsername) {
         message.content = RSA.giaiMaRSA(message.content, d, n);
-      } else if (message.senderUsername === store.username) {
-        const matchedMessage = oldMessages.value.find(
-          (oldMessage) => oldMessage.data.content === message.content
-        );
-        if (matchedMessage) {
-          message.content = matchedMessage.originalContent;
-        }
+      } else {
+        console.log(message);
+        // message.content = oldMessages.value
+        console.log("oldMessages.value :>> ", oldMessages.value);
       }
     });
 
@@ -131,7 +128,6 @@
         v-if="storeMessage.messages[0]?.conversationId"
       >
         <p class="">
-          Mã phòng:
           <strong>{{ storeMessage.messages[0]?.conversationId }}</strong>
         </p>
 

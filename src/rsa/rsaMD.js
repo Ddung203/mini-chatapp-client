@@ -36,8 +36,8 @@ class RSA {
       plaintext = plaintext.trim().replaceAll(" ", "_");
       let c_text = "";
       for (let i = 0; i < plaintext.length; i++) {
-        const index = VIETNAMESE_ALPHABET.indexOf(plaintext[i]);
-        if (index === -1) {
+        const index = VIETNAMESE_ALPHABET.indexOf(plaintext[i]) + 10;
+        if (index === 9) {
           throw new Error("Tham số đầu vào chứa kí tự không hợp lệ");
         } else {
           c_text += a_mu_b_mod_n(index, e, n) + "-";
@@ -58,8 +58,9 @@ class RSA {
     if (typeof ciphertext === "string" && isBin === false) {
       let plaintext = "";
       ciphertext = ciphertext.trim().split("-");
+
       for (let i = 0; i < ciphertext.length - 1; i++) {
-        let index = a_mu_b_mod_n(Number(ciphertext[i]), d, n);
+        let index = a_mu_b_mod_n(Number(ciphertext[i]), d, n) - 10;
         plaintext += VIETNAMESE_ALPHABET[index % VIETNAMESE_ALPHABET.length];
 
         // console.log("index :>> ", index);
