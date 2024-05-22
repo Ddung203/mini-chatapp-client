@@ -13,8 +13,6 @@
   const socket = ref(null);
   const rooms = ref([]);
 
-  // let { e, n } = JSON.parse(localStorage.getItem("receiverPublicKey"));
-
   const joinRoom = (roomID) => {
     if (!socket.value) return;
 
@@ -27,20 +25,9 @@
     socket.value.emit("myPublicKey", { username, myPublicKey });
 
     socket.value.on("history", (messages) => {
-      // console.log("history: messages :>> ", messages);
       handleMessage(messages);
     });
-
-    socket.value?.on("sent myPublicKey", (data) => {
-      // console.log(data);
-      console.log("data :>> ", data);
-    });
   };
-
-  socket.value?.on("sent myPublicKey", (data) => {
-    // console.log(data);
-    console.log("data :>> ", data);
-  });
 
   const sendMessage = () => {
     if (
@@ -80,7 +67,9 @@
   };
 
   const handleMessage = (messages) => {
+    // console.log('messages :>> ', messages);
     const { d, n } = JSON.parse(localStorage.getItem("myPrivateKey"));
+
     messages.forEach((message) => {
       if (message.senderUsername === storeMessage.receiverUsername) {
         message.content = RSA.giaiMaRSA(message.content, d, n);
@@ -97,7 +86,6 @@
     storeMessage.setMessages(messages);
   };
 
-  // Watch for changes in curRoomID and join the new room
   watch(
     () => storeMessage.curRoomID,
     (newRoomID) => {
@@ -119,7 +107,6 @@
     });
 
     socket.value.on("chat message", (messages) => {
-      // console.log("Nhận tin nhắn: ", messages);
       handleMessage(messages);
     });
 
