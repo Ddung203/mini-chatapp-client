@@ -22,26 +22,34 @@
     }
   };
 
-  const callAPIGetMessages = async (un, participant2publicKey) => {
-    localStorage.setItem("participant2publicKey", participant2publicKey);
+  const callAPIGetMessages = async (receiver, participant2publicKey) => {
+    const getReceiverPublicKeyResponse = await getReq(
+      `/auth/receiver-publicKey?receiver=${receiver}`
+    );
+
+    console.log(
+      "getReceiverPublicKeyResponse :>> ",
+      getReceiverPublicKeyResponse
+    );
+
+    localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
     try {
-      storeMessage.setReceiverUsername(un);
+      storeMessage.setReceiverUsername(receiver);
 
       const url = `/conversation/create`;
       const res = await postReq(url, {
         participant1Username: store.username,
-        participant2Username: un,
-        participant1publicKey: store.participant1publicKey,
-        participant2publicKey: participant2publicKey,
+        participant2Username: receiver,
+        participant1publicKey: localStorage.getItem("myPublicKey"),
+        participant2publicKey: getReceiverPublicKeyResponse,
       });
 
       if (!!res?.id === false) return;
 
       storeMessage.setCurRoomID(res?.id);
     } catch (error) {
-      // console.log("error 2:>> ", error);
+      console.log("error 2:>> ", error);
       store.setLoggedOut();
-      // router.push({ path: "/" });
     }
   };
 

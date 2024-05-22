@@ -1,12 +1,14 @@
 <script setup>
   import { ref } from "vue";
-  import { useConditionStore } from "../stores/index.js";
+  import { useConditionStore, useMessageStore } from "../stores/index.js";
   import postReq from "../api/post.js";
   import { useToast } from "primevue/usetoast";
   import notification from "../utils/notification.js";
+  import RSA from "../rsa/rsaMD.js";
 
   const toast = useToast();
   const store = useConditionStore();
+  const storeMessage = useMessageStore();
 
   const inputUsername = ref("");
   const inputPassword = ref("");
@@ -33,8 +35,17 @@
       if (response?.token && response?.token.length > 0) {
         store.setLoggedIn();
         store.setUsername(response.username);
-        store.setParticipant1publicKey(response.participant1publicKey);
         localStorage.setItem("token", response.token);
+
+        // Sinh cặp khóa
+        const { publicKey, privateKey } = RSA.sinhKhoaRSA();
+
+        const res = await postReq("/auth/save-publicKey", { publicKey });
+
+        store.setParticipant1publicKey(res.publicKey);
+
+        localStorage.setItem("myPublicKey", res.publicKey);
+        localStorage.setItem("myPrivateKey", JSON.stringify(privateKey));
 
         notification(
           toast,
@@ -53,10 +64,7 @@
     }
   };
 
-  const logoutHandler = async () => {
-    store.setLoggedOut();
-  };
-
+  //
   const registerHandler = async () => {
     try {
       if (
@@ -83,6 +91,12 @@
       notification(toast, "error", "Thông báo", e.response?.data?.error, 1000);
       return;
     }
+  };
+
+  //
+  const logoutHandler = async () => {
+    store.setLoggedOut();
+    storeMessage.setResetMessages();
   };
 </script>
 

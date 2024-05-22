@@ -35,6 +35,9 @@ const useConditionStore = defineStore("condition", {
         "curRoomID",
         "receiverUsername",
         "participant1publicKey",
+        "myPrivateKey",
+        "myPublicKey",
+        "receiverPublicKey",
       ].forEach((item) => localStorage.removeItem(item));
 
       this.$reset(); // Pinia's reset function
@@ -68,6 +71,9 @@ const useMessageStore = defineStore("message", {
     setReceiverUsername(receiverUsername) {
       setLocalStorageItem("receiverUsername", receiverUsername);
       this.receiverUsername = receiverUsername;
+    },
+    setResetMessages() {
+      this.$reset(); // Pinia's reset function
     },
   },
 });

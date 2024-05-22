@@ -11,6 +11,7 @@
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
+  const dem = ref(0);
 
   const newMessage = ref("");
   const socket = ref(null);
@@ -23,12 +24,12 @@
     storeMessage.setMessages([]);
 
     socket.value.on("history", (messages) => {
+      console.log("history: messages :>> ", messages);
       storeMessage.setMessages(messages);
     });
   };
 
   const sendMessage = () => {
-    const token = localStorage.getItem("token");
     if (
       !socket.value ||
       !storeMessage.curRoomID ||
@@ -37,16 +38,19 @@
       return;
     }
 
-    const { e, n } = JSON.parse(localStorage.getItem("participant2publicKey"));
+    const token = localStorage.getItem("token");
 
-    console.log("newMessage.value :>> ", RSA.maHoaRSA(newMessage.value, e, n));
+    // Lấy public key của người nhận
+    const { e, n } = JSON.parse(localStorage.getItem("receiverPublicKey"));
 
     const encryptedMessage = RSA.maHoaRSA(newMessage.value, e, n);
+
+    const tmpMessage = newMessage.value;
 
     const message = {
       roomID: storeMessage.curRoomID,
       data: {
-        content: newMessage.value,
+        content: encryptedMessage,
         conversationId: storeMessage.curRoomID,
         id: socket.value.id,
         senderUsername: store.username,
@@ -55,9 +59,21 @@
     };
 
     socket.value.emit("sendToken", { roomID: storeMessage.curRoomID, token });
+
     socket.value.emit("sendMessage", message);
 
     socket.value.on("chat message", (messages) => {
+      // console.log("Nhận tin nhắn: ", messages);
+
+      const { d, n } = JSON.parse(localStorage.getItem("myPrivateKey"));
+      messages.forEach((message) => {
+        console.log(message.senderUsername, storeMessage.receiverUsername);
+        if (message.senderUsername === storeMessage.receiverUsername)
+          message.content = RSA.giaiMaRSA(message.content, d, n);
+        console.log("message.content :>> ", message.content);
+      });
+
+      // console.log("messages :>> ", messages);
       storeMessage.setMessages(messages);
     });
 
@@ -112,7 +128,7 @@
         v-if="storeMessage.messages[0]?.conversationId"
       >
         <p class="">
-          Mã phòng:
+          Mã phòng:{{ dem }}
           <strong>{{ storeMessage.messages[0]?.conversationId }}</strong>
         </p>
 
