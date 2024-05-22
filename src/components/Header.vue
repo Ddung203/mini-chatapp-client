@@ -28,10 +28,6 @@
         password: inputPassword.value,
       });
 
-      console.log("response :>> ", response);
-
-      // if (response?.data?.error) throw new Error(response?.data?.error);
-
       if (response?.token && response?.token.length > 0) {
         store.setLoggedIn();
         store.setUsername(response.username);

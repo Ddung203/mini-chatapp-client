@@ -1,10 +1,8 @@
 <script setup>
   import { onMounted, ref, watch } from "vue";
-  import VirtualScroller from "primevue/virtualscroller";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
   import getReq from "../api/get.js";
   import postReq from "../api/post.js";
-  import router from "../routes/index.js";
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
@@ -18,21 +16,16 @@
     } catch (error) {
       // console.log("error :>> ", error);
       store.setLoggedOut();
-      // router.push({ path: "/" });
     }
   };
 
-  const callAPIGetMessages = async (receiver, participant2publicKey) => {
+  const callAPIGetMessages = async (receiver) => {
     const getReceiverPublicKeyResponse = await getReq(
       `/auth/receiver-publicKey?receiver=${receiver}`
     );
 
-    console.log(
-      "getReceiverPublicKeyResponse :>> ",
-      getReceiverPublicKeyResponse
-    );
-
     localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
+
     try {
       storeMessage.setReceiverUsername(receiver);
 
@@ -43,6 +36,8 @@
         participant1publicKey: localStorage.getItem("myPublicKey"),
         participant2publicKey: getReceiverPublicKeyResponse,
       });
+
+      // console.log("res :>> ", res);
 
       if (!!res?.id === false) return;
 
@@ -87,7 +82,7 @@
             class="w-[200px]"
             :label="user.username"
             icon="pi pi-user"
-            @click="callAPIGetMessages(user.username, user.publicKey)"
+            @click="callAPIGetMessages(user.username)"
           />
         </li>
       </ul>

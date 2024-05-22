@@ -13,17 +13,34 @@
   const socket = ref(null);
   const rooms = ref([]);
 
+  // let { e, n } = JSON.parse(localStorage.getItem("receiverPublicKey"));
+
   const joinRoom = (roomID) => {
     if (!socket.value) return;
 
-    socket.value.emit("joinRoom", roomID);
+    const username = store.username;
+    const myPublicKey = JSON.parse(localStorage.getItem("myPublicKey"));
+
+    socket.value.emit("joinRoom", { username, roomID });
     storeMessage.setMessages([]);
 
+    socket.value.emit("myPublicKey", { username, myPublicKey });
+
     socket.value.on("history", (messages) => {
-      console.log("history: messages :>> ", messages);
+      // console.log("history: messages :>> ", messages);
       handleMessage(messages);
     });
+
+    socket.value?.on("sent myPublicKey", (data) => {
+      // console.log(data);
+      console.log("data :>> ", data);
+    });
   };
+
+  socket.value?.on("sent myPublicKey", (data) => {
+    // console.log(data);
+    console.log("data :>> ", data);
+  });
 
   const sendMessage = () => {
     if (
@@ -94,7 +111,7 @@
     socket.value = io("http://localhost:8181/");
 
     socket.value.on("connect", () => {
-      console.log("socket.id :>> ", socket.value.id);
+      // console.log("socket.id :>> ", socket.value.id);
     });
 
     socket.value.on("roomList", (roomList) => {
@@ -102,7 +119,7 @@
     });
 
     socket.value.on("chat message", (messages) => {
-      console.log("Nhận tin nhắn: ", messages);
+      // console.log("Nhận tin nhắn: ", messages);
       handleMessage(messages);
     });
 
