@@ -1,8 +1,8 @@
 <script setup>
   import { onMounted, ref, watch } from "vue";
   import { useConditionStore, useMessageStore } from "../stores/index.js";
-  import getReq from "../api/get.js";
-  import postReq from "../api/post.js";
+  // import getReq from "../api/get.js";
+  // import postReq from "../api/post.js";
 
   const store = useConditionStore();
   const storeMessage = useMessageStore();
@@ -10,42 +10,44 @@
   const users = ref([]);
 
   const callAPIGetUsers = async () => {
-    try {
-      const response = await getReq("/user/except");
-      users.value = response;
-    } catch (error) {
-      // console.log("error :>> ", error);
-      store.setLoggedOut();
-    }
+    // try {
+    //   const response = await getReq("/user/except");
+    //   users.value = response;
+    // } catch (error) {
+    //   // console.log("error :>> ", error);
+    //   store.setLoggedOut();
+    // }
+    return;
   };
 
   const callAPIGetMessages = async (receiver) => {
-    const getReceiverPublicKeyResponse = await getReq(
-      `/auth/receiver-publicKey?receiver=${receiver}`
-    );
+    // const getReceiverPublicKeyResponse = await getReq(
+    //   `/auth/receiver-publicKey?receiver=${receiver}`
+    // );
 
-    localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
+    // localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
 
-    try {
-      storeMessage.setReceiverUsername(receiver);
+    // try {
+    //   storeMessage.setReceiverUsername(receiver);
 
-      const url = `/conversation/create`;
-      const res = await postReq(url, {
-        participant1Username: store.username,
-        participant2Username: receiver,
-        participant1publicKey: localStorage.getItem("myPublicKey"),
-        participant2publicKey: getReceiverPublicKeyResponse,
-      });
+    //   const url = `/conversation/create`;
+    //   const res = await postReq(url, {
+    //     participant1Username: store.username,
+    //     participant2Username: receiver,
+    //     participant1publicKey: localStorage.getItem("myPublicKey"),
+    //     participant2publicKey: getReceiverPublicKeyResponse,
+    //   });
 
-      // console.log("res :>> ", res);
+    //   // console.log("res :>> ", res);
 
-      if (!!res?.id === false) return;
+    //   if (!!res?.id === false) return;
 
-      storeMessage.setCurRoomID(res?.id);
-    } catch (error) {
-      console.log("error 2:>> ", error);
-      store.setLoggedOut();
-    }
+    //   storeMessage.setCurRoomID(res?.id);
+    // } catch (error) {
+    //   console.log("error 2:>> ", error);
+    //   store.setLoggedOut();
+    // }
+    return;
   };
 
   watch(

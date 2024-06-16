@@ -1,81 +1,50 @@
 <script setup>
   import { ref } from "vue";
-  import { useConditionStore, useMessageStore } from "../stores/index.js";
-  import postReq from "../api/post.js";
   import { useToast } from "primevue/usetoast";
   import notification from "../utils/notification.js";
-  import RSA from "../rsa/rsaMD.js";
+  import useAuthStore from "../stores/auth.js";
+  import keyAuthStore from "../stores/key.js";
 
   const toast = useToast();
-  const store = useConditionStore();
-  const storeMessage = useMessageStore();
+  const authStore = useAuthStore();
+  const keyStore = keyAuthStore();
 
   const inputUsername = ref("");
   const inputPassword = ref("");
 
   const loginHandler = async () => {
     try {
-      if (
-        inputUsername.value.trim() === "" ||
-        inputPassword.value.trim() === ""
-      ) {
-        notification(toast, "error", "Thông báo", "Đăng nhập thất bại!", 1500);
-        return;
-      }
+      const signInData = {
+        username: inputUsername.value.trim(),
+        password: inputPassword.value.trim(),
+      };
 
-      const response = await postReq("/auth/login", {
-        username: inputUsername.value,
-        password: inputPassword.value,
-      });
-
-      if (response?.token && response?.token.length > 0) {
-        store.setLoggedIn();
-        store.setUsername(response.username);
-        localStorage.setItem("token", response.token);
-
-        // Sinh cặp khóa
-        const { publicKey, privateKey } = RSA.sinhKhoaRSA();
-
-        const res = await postReq("/auth/save-publicKey", { publicKey });
-
-        store.setParticipant1publicKey(res.publicKey);
-
-        localStorage.setItem("myPublicKey", res.publicKey);
-        localStorage.setItem("myPrivateKey", JSON.stringify(privateKey));
-
-        notification(
-          toast,
-          "success",
-          "Thông báo",
-          "Đăng nhập thành công!",
-          1500
-        );
-      }
-
-      inputUsername.value = "";
-      inputPassword.value = "";
-    } catch (e) {
-      console.log("e :>> ", e);
-      notification(toast, "error", "Error", e.response?.data?.error, 2000);
+      await authStore.login(signInData);
+    } catch (error) {
+      authStore.logout();
+      notification(toast, "error", "Lỗi", error?.message, 1000);
     }
   };
 
   //
   const registerHandler = async () => {
     try {
-      if (
-        inputUsername.value.trim() === "" ||
-        inputPassword.value.trim() === ""
-      ) {
-        notification(toast, "error", "Lỗi", "Đăng ký thất bại", 2500);
+      const signInData = {
+        username: inputUsername.value.trim(),
+        password: inputPassword.value.trim(),
+      };
+      if (signInData.username === "" || signInData.password === "") {
+        notification(
+          toast,
+          "error",
+          "Lỗi",
+          "Thông tin đăng ký không chính xác!",
+          2000
+        );
         return;
       }
 
-      const response = await postReq("/auth/register", {
-        username: inputUsername.value,
-        password: inputPassword.value,
-      });
-
+      await authStore.register(signInData);
       notification(
         toast,
         "success",
@@ -84,15 +53,16 @@
         1000
       );
     } catch (e) {
-      notification(toast, "error", "Thông báo", e.response?.data?.error, 1000);
+      notification(toast, "error", "Thông báo", e.message, 1000);
       return;
     }
+    return;
   };
 
   //
   const logoutHandler = async () => {
-    store.setLoggedOut();
-    storeMessage.setResetMessages();
+    authStore.logout();
+    keyStore.clear();
   };
 </script>
 
@@ -102,14 +72,16 @@
     <header class="flex items-center justify-around py-3 border border-[#ccc]">
       <!--  -->
       <div class="left">
-        <p v-if="store.isLoggedIn">
-          Xin chào, <strong>{{ store.username }}</strong>
+        <p v-if="authStore.isAuthenticated">
+          Xin chào, <strong>{{ authStore.username }}</strong>
         </p>
-        <p v-if="!store.isLoggedIn">Đăng nhập hoặc đăng ký để bắt đầu ❤</p>
+        <p v-if="!authStore.isAuthenticated">
+          Đăng nhập hoặc đăng ký để bắt đầu ❤
+        </p>
       </div>
 
       <!--  -->
-      <div v-if="!store.isLoggedIn">
+      <div v-if="!authStore.isAuthenticated">
         <form class="flex gap-4 py-2">
           <FloatLabel>
             <InputText
@@ -133,7 +105,7 @@
       <!--  -->
       <div class="flex gap-5 right">
         <Button
-          v-if="!store.isLoggedIn"
+          v-if="!authStore.isAuthenticated"
           label="Đăng ký"
           severity="secondary"
           rounded
@@ -141,14 +113,14 @@
         />
 
         <Button
-          v-if="!store.isLoggedIn"
+          v-if="!authStore.isAuthenticated"
           label="Đăng nhập"
           rounded
           @click="loginHandler"
         />
 
         <Button
-          v-if="store.isLoggedIn"
+          v-if="authStore.isAuthenticated"
           label="Đăng xuất"
           severity="danger"
           rounded
