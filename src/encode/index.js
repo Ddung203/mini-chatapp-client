@@ -29,7 +29,7 @@ async function exportPrivateKey(fileName) {
     // Close the writable stream
     await writableStream.close();
 
-    console.log("Private key successfully exported!");
+    // console.log("Private key successfully exported!");
   } catch (error) {
     console.error("An error occurred during export:", error);
   }

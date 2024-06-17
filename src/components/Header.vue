@@ -89,7 +89,11 @@
       <!--  -->
       <div class="left">
         <p v-if="authStore.isAuthenticated">
-          Xin chào, <strong>{{ authStore.username }}</strong>
+          Xin chào,
+          <router-link to="/about">
+            <strong>{{ authStore.username }}</strong>
+          </router-link>
+          😎
         </p>
         <p v-if="!authStore.isAuthenticated">
           Đăng nhập hoặc đăng ký để bắt đầu ❤

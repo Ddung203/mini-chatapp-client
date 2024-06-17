@@ -14,6 +14,15 @@ const routes = [
     path: "/about",
     name: "about",
     component: AboutView,
+    beforeEnter: (to, from, next) => {
+      const user = JSON.parse(localStorage.getItem("user")) || null;
+
+      if (!user) {
+        next({ name: "home" });
+      } else {
+        next();
+      }
+    },
   },
 
   { path: "/:catchAll(.*)", component: NotFoundView },

@@ -17,6 +17,12 @@ const useAuthStore = defineStore("auth", {
     isAuthenticated: (state) => !!state.token && state.isLoggedIn,
   },
   actions: {
+    setStoreData({ username, token, isLoggedIn }) {
+      this.username = username;
+      this.token = token;
+      this.isLoggedIn = isLoggedIn; // bug: setStoreData function does not work
+    },
+
     async register({ username, password }) {
       try {
         const response = await HTTP.post("/auth/register", {
@@ -46,7 +52,14 @@ const useAuthStore = defineStore("auth", {
           this.token = response.token;
           this.isLoggedIn = true;
           await importPrivateKey();
-          localStorage.setItem("user", JSON.stringify(response));
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              username: this.username,
+              token: this.token,
+              isLoggedIn: this.isLoggedIn,
+            })
+          );
 
           const privateKeyJwkStr = localStorage.getItem("privateKey") || "";
 
