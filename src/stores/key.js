@@ -36,6 +36,7 @@ const useKeyStore = defineStore("key", {
       try {
         const salt = bcrypt.genSaltSync(10);
         const privateKeyHash = bcrypt.hashSync(privateKeyJwkStr, salt);
+
         const response = await HTTP.post("/auth/save-publicKey", {
           username,
           publicKey: JSON.stringify(this.publicKeyJwk),

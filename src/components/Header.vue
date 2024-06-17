@@ -23,7 +23,7 @@
       await authStore.login(signInData);
     } catch (error) {
       authStore.logout();
-      notification(toast, "error", "Lỗi", error?.message, 1000);
+      notification(toast, "error", "Lỗi", error?.message, 2500);
     }
   };
 
@@ -33,7 +33,7 @@
       const privateKeyJwkStr = JSON.stringify(keyStore.getPrivateKeyJwk);
       await keyStore.sendPublicKeyToServer(username, privateKeyJwkStr);
     } catch (error) {
-      console.log("error :>> ", error);
+      console.log("sendPublicKeyHandler error:: ", error);
       throw error;
     }
   };
@@ -49,7 +49,7 @@
           toast,
           "error",
           "Lỗi",
-          "Thông tin đăng ký không chính xác!",
+          "Thông tin đăng ký không được để trống!",
           2000
         );
         return;

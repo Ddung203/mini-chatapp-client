@@ -200,7 +200,7 @@ async function importPrivateKey() {
     // Lưu private key vào localStorage
     localStorage.setItem("privateKey", JSON.stringify(privateKeyJwk));
 
-    console.log("Private key successfully imported!");
+    // console.log("Private key successfully imported!");
   } catch (error) {
     console.error("An error occurred during import:", error);
   }
