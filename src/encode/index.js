@@ -1,3 +1,40 @@
+async function exportPrivateKey(fileName) {
+  try {
+    // Convert the private key to a JSON string
+    const privateKeyJwk = JSON.parse(localStorage.getItem("privateKey"));
+    const privateKeyStr = JSON.stringify(privateKeyJwk);
+
+    // Create a new file handle using the File System Access API
+    const options = {
+      types: [
+        {
+          description: "JSON Files",
+          accept: {
+            "application/json": [".json"],
+          },
+        },
+      ],
+    };
+    const handle = await window.showSaveFilePicker({
+      suggestedName: `privateKeyStr-${fileName}.json`,
+      ...options,
+    });
+
+    // Create a writable stream
+    const writableStream = await handle.createWritable();
+
+    // Write the JSON string to the file
+    await writableStream.write(privateKeyStr);
+
+    // Close the writable stream
+    await writableStream.close();
+
+    console.log("Private key successfully exported!");
+  } catch (error) {
+    console.error("An error occurred during export:", error);
+  }
+}
+
 /**
  * Generates a RSA key pair for encryption and decryption.
  * @returns {Promise<JsonWebKey>} The public key in JSON Web Key (JWK) format.
@@ -122,10 +159,59 @@ function base64ToArrayBuffer(base64) {
   return bytes.buffer;
 }
 
+/**
+ * Imports a private key from a file and returns it as a CryptoKey.
+ * @param {File} file - The file containing the private key in JSON format.
+ * @returns {Promise<CryptoKey>} The private key.
+ */
+
+async function importPrivateKey() {
+  try {
+    // Mở hộp thoại để người dùng chọn file
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [
+        {
+          description: "JSON Files",
+          accept: {
+            "application/json": [".json"],
+          },
+        },
+      ],
+      multiple: false,
+    });
+
+    // Lấy nội dung file
+    const file = await fileHandle.getFile();
+    const fileContent = await file.text();
+    const privateKeyJwk = JSON.parse(fileContent);
+
+    // Import private key
+    const privateKey = await window.crypto.subtle.importKey(
+      "jwk",
+      privateKeyJwk,
+      {
+        name: "RSA-OAEP",
+        hash: { name: "SHA-256" },
+      },
+      true,
+      ["decrypt"]
+    );
+
+    // Lưu private key vào localStorage
+    localStorage.setItem("privateKey", JSON.stringify(privateKeyJwk));
+
+    console.log("Private key successfully imported!");
+  } catch (error) {
+    console.error("An error occurred during import:", error);
+  }
+}
+
 export {
   generateKeyPair,
   encryptMessage,
   decryptMessage,
   arrayBufferToBase64,
   base64ToArrayBuffer,
+  importPrivateKey,
+  exportPrivateKey,
 };

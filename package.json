@@ -1,7 +1,7 @@
 {
-  "name": "vue-primevue-tw-template",
+  "name": "mini-chat-app-client",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "author": {
     "name": "DDung203"
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "axios": "^1.7.0",
+    "bcryptjs": "^2.4.3",
     "i18time": "^1.0.3",
     "jsonwebtoken": "^9.0.2",
     "pinia": "^2.1.7",

@@ -9,6 +9,8 @@ import {
   base64ToArrayBuffer,
 } from "../encode";
 
+import bcrypt from "bcryptjs";
+
 const useKeyStore = defineStore("key", {
   state: () => ({
     publicKeyJwk: ref(null),
@@ -30,10 +32,14 @@ const useKeyStore = defineStore("key", {
       this.publicKeyJwk = await generateKeyPair();
       this.privateKeyJwk = JSON.parse(localStorage.getItem("privateKey"));
     },
-    async sendPublicKeyToServer() {
+    async sendPublicKeyToServer(username, privateKeyJwkStr) {
       try {
+        const salt = bcrypt.genSaltSync(10);
+        const privateKeyHash = bcrypt.hashSync(privateKeyJwkStr, salt);
         const response = await HTTP.post("/auth/save-publicKey", {
+          username,
           publicKey: JSON.stringify(this.publicKeyJwk),
+          privateKeyHash,
         });
 
         console.log("sendPublicKeyToServer: ", response);

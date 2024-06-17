@@ -7,6 +7,7 @@
   import Check from "../components/Check.vue";
   import useAuthStore from "../stores/auth";
   import useKeyStore from "../stores/key";
+  import { exportPrivateKey } from "../encode";
 
   const authStore = useAuthStore();
   const keyStore = useKeyStore();
@@ -45,6 +46,7 @@
     <Check />
 
     <Button @click="keyStore.createKeyPair()">Tạo khóa</Button>
+    <Button @click="exportPrivateKey">Lưu lại khóa</Button>
     <Button @click="sendPublicKeyHandler">Gửi khóa</Button>
 
     <Header />

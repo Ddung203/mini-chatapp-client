@@ -4,6 +4,7 @@
   import notification from "../utils/notification.js";
   import useAuthStore from "../stores/auth.js";
   import keyAuthStore from "../stores/key.js";
+  import { exportPrivateKey, importPrivateKey } from "../encode/index.js";
 
   const toast = useToast();
   const authStore = useAuthStore();
@@ -27,6 +28,16 @@
   };
 
   //
+  const sendPublicKeyHandler = async (username) => {
+    try {
+      const privateKeyJwkStr = JSON.stringify(keyStore.getPrivateKeyJwk);
+      await keyStore.sendPublicKeyToServer(username, privateKeyJwkStr);
+    } catch (error) {
+      console.log("error :>> ", error);
+      throw error;
+    }
+  };
+  //
   const registerHandler = async () => {
     try {
       const signInData = {
@@ -45,6 +56,11 @@
       }
 
       await authStore.register(signInData);
+
+      await keyStore.createKeyPair();
+      await exportPrivateKey(signInData.username);
+      await sendPublicKeyHandler(signInData.username);
+
       notification(
         toast,
         "success",
