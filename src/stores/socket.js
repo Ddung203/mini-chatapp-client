@@ -9,8 +9,6 @@ import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
 } from "../encode";
-import { useConditionStore, useMessageStore } from "../stores/index.js"; //
-import RSA from "../rsa/rsaMD.js"; //
 import useAuthStore from "./auth.js";
 import HTTP from "../api/axiosInstance.js";
 
@@ -20,7 +18,7 @@ const useSocketStore = defineStore("socket", {
     rooms: ref([]),
     roomID: ref(null),
     userOnlineList: ref([]),
-    receiver: ref({}),
+    receiver: ref(null),
     oldMessages: ref([]),
     newMessage: ref(""),
   }),
@@ -102,7 +100,7 @@ const useSocketStore = defineStore("socket", {
       const authStore = useAuthStore();
       const username = authStore.getUsername;
 
-      console.log("joinRoom :>> ", { username, roomID });
+      // console.log("joinRoom :>> ", { username, roomID });
 
       this.socket.emit("joinRoom", { username, roomID });
     },
@@ -113,69 +111,14 @@ const useSocketStore = defineStore("socket", {
       const authStore = useAuthStore();
       const username = authStore.getUsername;
 
-      console.log("leaveRoom", { username, roomID: this.roomID });
+      // console.log("leaveRoom", { username, roomID: this.roomID });
 
       this.socket.emit("leaveRoom", { username, roomID: this.roomID });
     },
 
-    sendMessage() {
-      const store = useConditionStore();
-      const storeMessage = useMessageStore();
+    sendMessage() {},
 
-      if (
-        !this.socket ||
-        !storeMessage.curRoomID ||
-        this.newMessage.trim() === ""
-      ) {
-        return;
-      }
-
-      const token = localStorage.getItem("token");
-
-      // Lấy public key của người nhận
-      const { e, n } = JSON.parse(localStorage.getItem("receiverPublicKey"));
-
-      const encryptedMessage = RSA.maHoaRSA(this.newMessage, e, n);
-
-      const message = {
-        roomID: storeMessage.curRoomID,
-        data: {
-          content: encryptedMessage,
-          conversationId: storeMessage.curRoomID,
-          id: this.socket.id,
-          senderUsername: store.username,
-          receiverUsername: storeMessage.receiverUsername,
-        },
-        originalContent: this.newMessage,
-      };
-
-      this.socket.emit("sendToken", { roomID: storeMessage.curRoomID, token });
-      this.socket.emit("sendMessage", message);
-
-      this.oldMessages.push(message);
-      this.newMessage = "";
-    },
-
-    handleMessage(messages) {
-      const storeMessage = useMessageStore();
-      const store = useConditionStore();
-      const { d, n } = JSON.parse(localStorage.getItem("myPrivateKey"));
-
-      messages.forEach((message) => {
-        if (message.senderUsername === storeMessage.receiverUsername) {
-          message.content = RSA.giaiMaRSA(message.content, d, n);
-        } else if (message.senderUsername === store.username) {
-          const matchedMessage = this.oldMessages.find(
-            (oldMessage) => oldMessage.data.content === message.content
-          );
-          if (matchedMessage) {
-            message.content = matchedMessage.originalContent;
-          }
-        }
-      });
-
-      storeMessage.setMessages(messages);
-    },
+    handleMessage(messages) {},
   },
 });
 

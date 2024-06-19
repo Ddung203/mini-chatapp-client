@@ -54,7 +54,7 @@
         class="flex border border-[#ccc]"
       >
         <Sidebar />
-        <!-- <ChatBox /> -->
+        <ChatBox />
       </div>
       <div
         v-if="!authStore.isAuthenticated"

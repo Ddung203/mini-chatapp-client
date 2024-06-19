@@ -13,7 +13,7 @@
     if (authStore.getUsername !== partnerUsername) {
       // socketStore.leaveRoom();
       await socketStore.getRoomID(authStore.getUsername, partnerUsername);
-      console.log("socketStore.roomID :>> ", socketStore.roomID);
+      // console.log("socketStore.roomID :>> ", socketStore.roomID);
 
       socketStore.joinRoom(socketStore.roomID);
     } else {
