@@ -11,42 +11,20 @@
 
   const joinRoomHandler = async (partnerUsername) => {
     if (authStore.getUsername !== partnerUsername) {
-      // socketStore.leaveRoom();
+      socketStore.setReceiver({ username: partnerUsername });
       await socketStore.getRoomID(authStore.getUsername, partnerUsername);
       // console.log("socketStore.roomID :>> ", socketStore.roomID);
 
       socketStore.joinRoom(socketStore.roomID);
+
+      console.log("oldMessages :>> ", socketStore.oldMessages);
+
+      socketStore.handleMessage();
     } else {
       console.log("Bạn không thể kết nối với chính mình");
       return;
     }
 
-    // const getReceiverPublicKeyResponse = await getReq(
-    //   `/auth/receiver-publicKey?receiver=${receiver}`
-    // );
-
-    // localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
-
-    // try {
-    //   storeMessage.setReceiverUsername(receiver);
-
-    //   const url = `/conversation/create`;
-    //   const res = await postReq(url, {
-    //     participant1Username: store.username,
-    //     participant2Username: receiver,
-    //     participant1publicKey: localStorage.getItem("myPublicKey"),
-    //     participant2publicKey: getReceiverPublicKeyResponse,
-    //   });
-
-    //   // console.log("res :>> ", res);
-
-    //   if (!!res?.id === false) return;
-
-    //   storeMessage.setCurRoomID(res?.id);
-    // } catch (error) {
-    //   console.log("error 2:>> ", error);
-    //   store.setLoggedOut();
-    // }
     return;
   };
 </script>

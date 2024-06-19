@@ -98,6 +98,7 @@
     socketStore.leaveRoom();
     socketStore.disconnectSocket(username);
     authStore.logout();
+    socketStore.clear();
     keyStore.clear();
   };
 

@@ -31,10 +31,16 @@ const useSocketStore = defineStore("socket", {
   },
 
   actions: {
+    clear() {
+      this.$reset();
+    },
+
+    setReceiver(receiver) {
+      this.receiver = receiver;
+    },
+
     initializeSocket() {
-      this.socket = io("http://localhost:8181/", {
-        transports: ["websocket"],
-      });
+      this.socket = io("http://localhost:8181/");
 
       this.socket.on("connect", () => {
         console.log("ID:: ", this.socket.id);
@@ -116,9 +122,27 @@ const useSocketStore = defineStore("socket", {
       this.socket.emit("leaveRoom", { username, roomID: this.roomID });
     },
 
-    sendMessage() {},
+    sendMessage(content) {
+      const authStore = useAuthStore();
 
-    handleMessage(messages) {},
+      const dataMessage = {
+        conversationId: this.roomID,
+        content: content.trim(),
+        senderUsername: authStore.getUsername,
+        receiverUsername: this.receiver?.username,
+      };
+
+      // console.log("dataMessage :>> ", dataMessage);
+
+      this.socket.emit("sendMessage", dataMessage);
+    },
+
+    handleMessage() {
+      this.socket.on("chatMessage", (messages) => {
+        // console.log("messages :>> ", messages);
+        this.oldMessages = messages;
+      });
+    },
   },
 });
 

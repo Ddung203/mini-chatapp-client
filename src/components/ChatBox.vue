@@ -11,7 +11,14 @@
 
   const newMessage = ref("Hello");
 
-  const sendMessageHandler = () => {};
+  const sendMessageHandler = () => {
+    socketStore.sendMessage(newMessage.value);
+    newMessage.value = "";
+
+    socketStore.handleMessage();
+  };
+
+  // onMounted();
 </script>
 
 <template>
@@ -72,7 +79,11 @@
         iconPos="right"
         label="Gửi"
         rounded
-        :disabled="!authStore.isLoggedIn || newMessage.trim() === ''"
+        :disabled="
+          !authStore.isLoggedIn ||
+          newMessage.trim() === '' ||
+          !socketStore.roomID
+        "
       />
     </form>
   </div>
