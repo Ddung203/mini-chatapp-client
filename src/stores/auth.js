@@ -9,6 +9,7 @@ const useAuthStore = defineStore("auth", {
     isLoggedIn: ref(false),
     username: ref(""),
     token: ref(""),
+    expiredTime: ref(null),
   }),
   getters: {
     getIsLoggedIn: (state) => state.isLoggedIn,

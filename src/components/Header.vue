@@ -1,17 +1,24 @@
 <script setup>
-  import { ref } from "vue";
+  import { onMounted, ref } from "vue";
   import { useToast } from "primevue/usetoast";
   import notification from "../utils/notification.js";
   import useAuthStore from "../stores/auth.js";
-  import keyAuthStore from "../stores/key.js";
-  import { exportPrivateKey, importPrivateKey } from "../encode/index.js";
+  import useKeyStore from "../stores/key.js";
+  import useSocketStore from "../stores/socket.js";
+  import { exportPrivateKey } from "../encode/index.js";
+  import { detectMobile } from "../utils/detectMobile.js";
 
   const toast = useToast();
-  const authStore = useAuthStore();
-  const keyStore = keyAuthStore();
 
-  const inputUsername = ref("");
-  const inputPassword = ref("");
+  const isMobile = ref(false);
+
+  const authStore = useAuthStore();
+  const keyStore = useKeyStore();
+  const socketStore = useSocketStore();
+
+  const inputUsername = ref("cuoicuoi");
+  const inputPassword = ref("123");
+  const userOnlineList = ref([]);
 
   const loginHandler = async () => {
     try {
@@ -21,6 +28,14 @@
       };
 
       await authStore.login(signInData);
+
+      socketStore.initializeSocket();
+
+      socketStore.loginSocket(signInData.username);
+
+      userOnlineList.value = socketStore.userOnlineList.map(
+        (user) => user.username
+      );
     } catch (error) {
       authStore.logout();
       notification(toast, "error", "Lỗi", error?.message, 2500);
@@ -76,16 +91,29 @@
   };
 
   //
-  const logoutHandler = async () => {
+  const logoutHandler = async (username) => {
+    userOnlineList.value = socketStore.userOnlineList.map(
+      (user) => user.username
+    );
+    socketStore.leaveRoom();
+    socketStore.disconnectSocket(username);
     authStore.logout();
     keyStore.clear();
   };
+
+  //
+
+  onMounted(() => {
+    isMobile.value = detectMobile();
+  });
 </script>
 
 <template>
   <Toast />
   <div class="fixed top-0 left-0 w-[100vw] bg-white z-40">
-    <header class="flex items-center justify-around py-3 border border-[#ccc]">
+    <header
+      class="flex flex-col lg:flex-row items-center justify-around py-3 border border-[#ccc]"
+    >
       <!--  -->
       <div class="left">
         <p v-if="authStore.isAuthenticated">
@@ -95,14 +123,14 @@
           </router-link>
           😎
         </p>
-        <p v-if="!authStore.isAuthenticated">
+        <p v-if="!authStore.isAuthenticated && !isMobile">
           Đăng nhập hoặc đăng ký để bắt đầu ❤
         </p>
       </div>
 
       <!--  -->
       <div v-if="!authStore.isAuthenticated">
-        <form class="flex gap-4 py-2">
+        <form class="flex flex-col gap-4 py-2 lg:flex-row">
           <FloatLabel>
             <InputText
               id="username"
@@ -123,7 +151,7 @@
       </div>
 
       <!--  -->
-      <div class="flex gap-5 right">
+      <div class="flex gap-5 lg:flex-row right">
         <Button
           v-if="!authStore.isAuthenticated"
           label="Đăng ký"
@@ -144,7 +172,7 @@
           label="Đăng xuất"
           severity="danger"
           rounded
-          @click="logoutHandler"
+          @click="logoutHandler(authStore.getUsername)"
         />
       </div>
     </header>
