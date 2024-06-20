@@ -11,6 +11,7 @@ import {
 } from "../encode";
 import useAuthStore from "./auth.js";
 import HTTP from "../api/axiosInstance.js";
+import useKeyStore from "./key.js";
 
 const useSocketStore = defineStore("socket", {
   state: () => ({
@@ -80,7 +81,7 @@ const useSocketStore = defineStore("socket", {
     async disconnectSocket(username) {
       if (this.socket) {
         await this.socket.emit("logout", username);
-        this.socket.disconnect();
+        // this.socket.disconnect();
       }
     },
 
@@ -122,12 +123,19 @@ const useSocketStore = defineStore("socket", {
       this.socket.emit("leaveRoom", { username, roomID: this.roomID });
     },
 
-    sendMessage(content) {
+    async sendMessage(content) {
       const authStore = useAuthStore();
+      const keyStore = useKeyStore();
+
+      const encryptMessaged = arrayBufferToBase64(
+        await encryptMessage(keyStore.publicKeyJwk, content.trim())
+      );
+
+      console.log("encryptMessaged :>> ", encryptMessaged);
 
       const dataMessage = {
         conversationId: this.roomID,
-        content: content.trim(),
+        content: encryptMessaged,
         senderUsername: authStore.getUsername,
         receiverUsername: this.receiver?.username,
       };
@@ -137,9 +145,19 @@ const useSocketStore = defineStore("socket", {
       this.socket.emit("sendMessage", dataMessage);
     },
 
-    handleMessage() {
-      this.socket.on("chatMessage", (messages) => {
-        // console.log("messages :>> ", messages);
+    async handleMessage() {
+      this.socket.on("chatMessage", async (messages) => {
+        for (const message of messages) {
+          if (message.senderUsername === this.receiver.username) {
+            const arrayBuffer = base64ToArrayBuffer(message.content);
+            try {
+              const decryptedMessage = await decryptMessage(arrayBuffer);
+              console.log("Decrypted message :>> ", decryptedMessage);
+            } catch (error) {
+              console.log("Error decrypting message: ", error);
+            }
+          }
+        }
         this.oldMessages = messages;
       });
     },

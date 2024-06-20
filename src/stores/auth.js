@@ -3,6 +3,7 @@ import { ref } from "vue";
 import HTTP from "../api/axiosInstance";
 import bcrypt from "bcryptjs";
 import { importPrivateKey } from "../encode";
+import useKeyStore from "./key";
 
 const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -69,11 +70,17 @@ const useAuthStore = defineStore("auth", {
             response?.privateKeyHash
           );
 
-          if (!isMatch) {
-            this.$reset();
-            localStorage.clear();
-            throw new Error("Khóa private không hợp lệ!");
-          }
+          // if (!isMatch) {
+          //   this.$reset();
+          //   localStorage.clear();
+          //   throw new Error("Khóa private không hợp lệ!");
+          // }
+
+          const keyStore = useKeyStore();
+          keyStore.setKeyPair(
+            JSON.parse(response.publicKey),
+            JSON.parse(privateKeyJwkStr)
+          );
         }
       } catch (error) {
         throw error;

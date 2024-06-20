@@ -11,11 +11,11 @@
 
   const newMessage = ref("Hello");
 
-  const sendMessageHandler = () => {
-    socketStore.sendMessage(newMessage.value);
+  const sendMessageHandler = async () => {
+    await socketStore.sendMessage(newMessage.value);
     newMessage.value = "";
 
-    socketStore.handleMessage();
+    await socketStore.handleMessage();
   };
 
   // onMounted();

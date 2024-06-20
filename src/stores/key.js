@@ -49,6 +49,11 @@ const useKeyStore = defineStore("key", {
         return;
       }
     },
+
+    setKeyPair(publicKeyJwk, privateKeyJwk) {
+      this.publicKeyJwk = publicKeyJwk;
+      this.privateKeyJwk = privateKeyJwk;
+    },
   },
 });
 
