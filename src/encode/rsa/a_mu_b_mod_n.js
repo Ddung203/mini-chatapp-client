@@ -22,8 +22,6 @@ const a_mu_b_mod_n = (a, b, n) => {
     }
   }
 
-  // console.log("f :>> ", f);
-
   return f; // number
 };
 

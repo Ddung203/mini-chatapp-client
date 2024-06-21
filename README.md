@@ -1,11 +1,17 @@
-# Vite + Vue + Primevue + TailwindCSS
+# Đề tài: XÂY DỰNG DỰNG SẢN PHẨM TRUYỀN TIN MÃ HÓA SỬ DỤNG
 
-This template should help get you started developing with Vue 3 + Primevue + TailwindCSS + Vue Router v4 + Pinia in Vite.
+Thành viên:
+
+1. Dương Văn Dũng
+2. Trần Văn Dự
+3. Ngô Văn Đức
+4. Quản Anh Đức
+5. Trịnh Xuân Anh Đức
 
 ## Clone Project
 
 ```sh
-git clone https://github.com/Ddung203/vue-primevue-tw-template.git
+git clone https://github.com/Ddung203/mini-chatapp-client.git
 ```
 
 ## Run Project

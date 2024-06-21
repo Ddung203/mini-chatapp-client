@@ -33,7 +33,6 @@ const maHoaRSA = ({ plaintext, publicKey }) => {
       typeof publicKey.e !== "number" ||
       typeof publicKey.n !== "number"
     ) {
-      console.log(`${typeof publicKey.e} - ${typeof publicKey.n}`);
       throw new Error("Tham số đầu vào không hợp lệ");
     }
 
@@ -92,16 +91,3 @@ const giaiMaRSA = ({ ciphertext, privateKey }) => {
 };
 
 export { sinhKhoaRSA, maHoaRSA, giaiMaRSA };
-
-//! Test
-// const { publicKey, privateKey } = sinhKhoaRSA();
-
-// console.log(" { publicKey, privateKey } :>> ", { publicKey, privateKey });
-
-// const plaintext = "Hello";
-// const ciphertext = maHoaRSA({ plaintext, publicKey });
-// const decryptedText = giaiMaRSA({ ciphertext, privateKey });
-
-// console.log("Plaintext:", plaintext);
-// console.log("Ciphertext:", ciphertext);
-// console.log("Decrypted Text:", decryptedText);

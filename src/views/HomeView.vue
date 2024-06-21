@@ -4,6 +4,8 @@
   import Footer from "../components/Footer.vue";
   import Sidebar from "../components/Sidebar.vue";
   import ChatBox from "../components/ChatBox.vue";
+  import SessionMessage from "../components/SessionMessage.vue";
+
   import useAuthStore from "../stores/auth";
   import useKeyStore from "../stores/key";
   import useSocketStore from "../stores/socket";
@@ -45,7 +47,10 @@
 
 <template>
   <div>
+    <!-- HEADER -->
     <Header />
+
+    <!-- MAIN -->
     <div
       class="w-[100vw] mt-[76px] h-[90vh] overflow-x-hidden flex justify-center"
     >
@@ -55,7 +60,10 @@
       >
         <Sidebar />
         <ChatBox />
+        <SessionMessage />
       </div>
+
+      <!-- MAIN: Khi chưa đăng nhập -->
       <div
         v-if="!authStore.isAuthenticated"
         class="p-3 mt-[100px] lg:mt-7"
@@ -70,13 +78,15 @@
         <br />
         <ul>
           <li>Thành viên 1: Dương Văn Dũng - 2021602195</li>
-          <li>Thành viên 2: Trần Văn Dự - 18120004</li>
+          <li>Thành viên 2: Trần Văn Dự - 2021603093</li>
           <li>Thành viên 3: Ngô Văn Đức - 18120006</li>
           <li>Thành viên 4: Quản Anh Đức - 18120008</li>
           <li>Thành viên 5: Trịnh Xuân Anh Đức - 18120010</li>
         </ul>
       </div>
     </div>
+
+    <!-- FOOTER -->
     <Footer></Footer>
   </div>
 </template>

@@ -13,7 +13,6 @@
     if (authStore.getUsername !== partnerUsername) {
       socketStore.setReceiver({ username: partnerUsername });
       await socketStore.getRoomID(authStore.getUsername, partnerUsername);
-      // console.log("socketStore.roomID :>> ", socketStore.roomID);
 
       socketStore.joinRoom(socketStore.roomID);
       await keyStore.setReceiverPublicKey(partnerUsername);
@@ -31,7 +30,7 @@
 </script>
 
 <template>
-  <div class="w-1/4 min-h-[70vh] p-4 bg-gray-200 sidebar">
+  <div class="min-h-[70vh] p-4 bg-gray-200 sidebar">
     <h2 class="mb-4 text-xl font-bold">Danh sách bạn bè</h2>
     <div class="max-h-[530px] w-[240px] overflow-y-scroll overflow-x-hidden">
       <ul

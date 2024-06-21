@@ -109,8 +109,6 @@ const useKeyStore = defineStore("key", {
           publicKey: JSON.stringify(this.publicKeyJwk),
           privateKeyHash,
         });
-
-        // console.log("sendPublicKeyToServer: ", response);
       } catch (error) {
         console.log(error);
         return;

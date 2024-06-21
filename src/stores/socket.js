@@ -15,6 +15,7 @@ const useSocketStore = defineStore("socket", {
     userOnlineList: ref([]),
     receiver: ref(null),
     oldMessages: ref([]),
+    curMessages: ref([]),
     newMessage: ref(""),
   }),
 
@@ -28,6 +29,10 @@ const useSocketStore = defineStore("socket", {
   actions: {
     clear() {
       this.$reset();
+    },
+
+    setCurMessages(message) {
+      this.curMessages.push(message);
     },
 
     setReceiver(receiver) {
