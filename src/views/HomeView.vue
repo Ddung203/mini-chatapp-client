@@ -28,19 +28,19 @@
   // });
 
   // Xác nhận Tải lại website
-  const handleBeforeUnload = (event) => {
-    event.preventDefault();
-    event.returnValue = "";
-    showAlert.value = true;
-  };
+  // const handleBeforeUnload = (event) => {
+  //   event.preventDefault();
+  //   event.returnValue = "";
+  //   showAlert.value = true;
+  // };
 
-  onMounted(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-  });
+  // onMounted(() => {
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  // });
 
-  onBeforeUnmount(() => {
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-  });
+  // onBeforeUnmount(() => {
+  //   window.removeEventListener("beforeunload", handleBeforeUnload);
+  // });
 </script>
 
 <template>

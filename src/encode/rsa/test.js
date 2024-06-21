@@ -70,12 +70,19 @@ const giaiMaRSA = ({ ciphertext, privateKey }) => {
     let plaintext = "";
     ciphertext = ciphertext.split("-");
 
+    console.log("ciphertext :>> ", ciphertext);
+
     for (let i = 0; i < ciphertext.length; i++) {
       if (ciphertext[i] === "") continue;
+
+      console.log("ciphertext[i] :>> ", ciphertext[i]);
+      console.log("privateKey.d :>> ", privateKey.d);
+      console.log("privateKey.n :>> ", privateKey.n);
 
       let index =
         a_mu_b_mod_n(Number(ciphertext[i]), privateKey.d, privateKey.n) - 220;
 
+      console.log("index :>> ", index);
       if (index < 0) {
         continue;
       }
@@ -91,17 +98,18 @@ const giaiMaRSA = ({ ciphertext, privateKey }) => {
   }
 };
 
-export { sinhKhoaRSA, maHoaRSA, giaiMaRSA };
-
 //! Test
 // const { publicKey, privateKey } = sinhKhoaRSA();
 
+const publicKey = { n: 9192791, e: 6637 };
+const privateKey = { d: 2907589, n: 9192791 };
+
 // console.log(" { publicKey, privateKey } :>> ", { publicKey, privateKey });
 
-// const plaintext = "Hello";
-// const ciphertext = maHoaRSA({ plaintext, publicKey });
-// const decryptedText = giaiMaRSA({ ciphertext, privateKey });
+const plaintext = "A";
+const ciphertext = maHoaRSA({ plaintext, publicKey });
+const decryptedText = giaiMaRSA({ ciphertext: "41929576", privateKey });
 
-// console.log("Plaintext:", plaintext);
-// console.log("Ciphertext:", ciphertext);
-// console.log("Decrypted Text:", decryptedText);
+console.log("Plaintext:", plaintext);
+console.log("Ciphertext:", ciphertext);
+console.log("Decrypted Text:", decryptedText);

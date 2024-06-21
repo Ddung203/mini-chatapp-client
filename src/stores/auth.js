@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import HTTP from "../api/axiosInstance";
 import bcrypt from "bcryptjs";
-import { importPrivateKey } from "../encode";
 import useKeyStore from "./key";
 
 const useAuthStore = defineStore("auth", {
@@ -33,7 +32,11 @@ const useAuthStore = defineStore("auth", {
         });
 
         if (response?.status && response?.status === "success") {
-          return true;
+          const keyStore = useKeyStore();
+
+          await keyStore.createKeyPair();
+          await keyStore.exportPrivateKey(username);
+          await keyStore.sendPublicKeyToServer(username);
         }
       } catch (error) {
         console.log(error?.message);
@@ -48,12 +51,16 @@ const useAuthStore = defineStore("auth", {
           password,
         });
 
-        // console.log("actions: response :>> ", response);
         if (response?.status && response?.status === "success") {
+          const keyStore = useKeyStore();
           this.username = response.username;
           this.token = response.token;
           this.isLoggedIn = true;
-          await importPrivateKey();
+
+          //
+          await keyStore.importPrivateKey();
+
+          //
           localStorage.setItem(
             "user",
             JSON.stringify({
@@ -63,6 +70,7 @@ const useAuthStore = defineStore("auth", {
             })
           );
 
+          //
           const privateKeyJwkStr = localStorage.getItem("privateKey") || "";
 
           const isMatch = bcrypt.compareSync(
@@ -70,13 +78,12 @@ const useAuthStore = defineStore("auth", {
             response?.privateKeyHash
           );
 
-          // if (!isMatch) {
-          //   this.$reset();
-          //   localStorage.clear();
-          //   throw new Error("Khóa private không hợp lệ!");
-          // }
+          if (!isMatch) {
+            this.$reset();
+            localStorage.clear();
+            throw new Error("Khóa private không hợp lệ!");
+          }
 
-          const keyStore = useKeyStore();
           keyStore.setKeyPair(
             JSON.parse(response.publicKey),
             JSON.parse(privateKeyJwkStr)

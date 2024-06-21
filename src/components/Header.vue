@@ -5,7 +5,6 @@
   import useAuthStore from "../stores/auth.js";
   import useKeyStore from "../stores/key.js";
   import useSocketStore from "../stores/socket.js";
-  import { exportPrivateKey } from "../encode/index.js";
   import { detectMobile } from "../utils/detectMobile.js";
 
   const toast = useToast();
@@ -20,39 +19,7 @@
   const inputPassword = ref("123");
   const userOnlineList = ref([]);
 
-  const loginHandler = async () => {
-    try {
-      const signInData = {
-        username: inputUsername.value.trim(),
-        password: inputPassword.value.trim(),
-      };
-
-      await authStore.login(signInData);
-
-      socketStore.initializeSocket();
-
-      socketStore.loginSocket(signInData.username);
-
-      userOnlineList.value = socketStore.userOnlineList.map(
-        (user) => user.username
-      );
-    } catch (error) {
-      authStore.logout();
-      notification(toast, "error", "Lỗi", error?.message, 2500);
-    }
-  };
-
-  //
-  const sendPublicKeyHandler = async (username) => {
-    try {
-      const privateKeyJwkStr = JSON.stringify(keyStore.getPrivateKeyJwk);
-      await keyStore.sendPublicKeyToServer(username, privateKeyJwkStr);
-    } catch (error) {
-      console.log("sendPublicKeyHandler error:: ", error);
-      throw error;
-    }
-  };
-  //
+  // Xử lý đăng ký
   const registerHandler = async () => {
     try {
       const signInData = {
@@ -72,10 +39,6 @@
 
       await authStore.register(signInData);
 
-      await keyStore.createKeyPair();
-      await exportPrivateKey(signInData.username);
-      await sendPublicKeyHandler(signInData.username);
-
       notification(
         toast,
         "success",
@@ -83,14 +46,37 @@
         "Đăng ký tài khoản thành công!",
         1000
       );
-    } catch (e) {
-      notification(toast, "error", "Thông báo", e.message, 1000);
+    } catch (error) {
+      notification(toast, "error", "Lỗi", error.message, 1500);
       return;
     }
     return;
   };
 
-  //
+  // Xử lý đăng nhập
+  const loginHandler = async () => {
+    try {
+      const signInData = {
+        username: inputUsername.value.trim(),
+        password: inputPassword.value.trim(),
+      };
+
+      await authStore.login(signInData);
+
+      socketStore.initializeSocket();
+
+      socketStore.loginSocket(signInData.username);
+
+      userOnlineList.value = socketStore.userOnlineList.map(
+        (user) => user.username
+      );
+    } catch (error) {
+      authStore.logout();
+      notification(toast, "error", "Lỗi", error?.message, 2000);
+    }
+  };
+
+  //  Xử lý đăng xuất
   const logoutHandler = async (username) => {
     userOnlineList.value = socketStore.userOnlineList.map(
       (user) => user.username
@@ -103,7 +89,6 @@
   };
 
   //
-
   onMounted(() => {
     isMobile.value = detectMobile();
   });

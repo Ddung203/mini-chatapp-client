@@ -16,6 +16,7 @@
       // console.log("socketStore.roomID :>> ", socketStore.roomID);
 
       socketStore.joinRoom(socketStore.roomID);
+      await keyStore.setReceiverPublicKey(partnerUsername);
 
       console.log("oldMessages :>> ", socketStore.oldMessages);
 

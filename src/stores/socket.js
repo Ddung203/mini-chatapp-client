@@ -2,16 +2,10 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { io } from "socket.io-client";
 import router from "../routes/index";
-import {
-  generateKeyPair,
-  encryptMessage,
-  decryptMessage,
-  arrayBufferToBase64,
-  base64ToArrayBuffer,
-} from "../encode";
 import useAuthStore from "./auth.js";
 import HTTP from "../api/axiosInstance.js";
 import useKeyStore from "./key.js";
+import { maHoaRSA, giaiMaRSA } from "../encode/rsa/rsa.js";
 
 const useSocketStore = defineStore("socket", {
   state: () => ({
@@ -65,14 +59,9 @@ const useSocketStore = defineStore("socket", {
       this.socket.on("userOnlineListChanged", (userOnlineList) => {
         this.userOnlineList = userOnlineList;
       });
-
-      // this.socket.on("chat message", (messages) => {
-      //   this.handleMessage(messages);
-      // });
     },
 
     async loginSocket(username) {
-      // console.log(`loginSocket(${username})`);
       if (this.socket) {
         await this.socket.emit("login", { username });
       }
@@ -81,7 +70,6 @@ const useSocketStore = defineStore("socket", {
     async disconnectSocket(username) {
       if (this.socket) {
         await this.socket.emit("logout", username);
-        // this.socket.disconnect();
       }
     },
 
@@ -107,8 +95,6 @@ const useSocketStore = defineStore("socket", {
       const authStore = useAuthStore();
       const username = authStore.getUsername;
 
-      // console.log("joinRoom :>> ", { username, roomID });
-
       this.socket.emit("joinRoom", { username, roomID });
     },
 
@@ -118,8 +104,6 @@ const useSocketStore = defineStore("socket", {
       const authStore = useAuthStore();
       const username = authStore.getUsername;
 
-      // console.log("leaveRoom", { username, roomID: this.roomID });
-
       this.socket.emit("leaveRoom", { username, roomID: this.roomID });
     },
 
@@ -127,11 +111,10 @@ const useSocketStore = defineStore("socket", {
       const authStore = useAuthStore();
       const keyStore = useKeyStore();
 
-      const encryptMessaged = arrayBufferToBase64(
-        await encryptMessage(keyStore.publicKeyJwk, content.trim())
-      );
-
-      console.log("encryptMessaged :>> ", encryptMessaged);
+      const encryptMessaged = maHoaRSA({
+        plaintext: content.trim(),
+        publicKey: keyStore.receiverPublicKey,
+      });
 
       const dataMessage = {
         conversationId: this.roomID,
@@ -140,25 +123,38 @@ const useSocketStore = defineStore("socket", {
         receiverUsername: this.receiver?.username,
       };
 
-      // console.log("dataMessage :>> ", dataMessage);
-
       this.socket.emit("sendMessage", dataMessage);
     },
 
     async handleMessage() {
+      const keyStore = useKeyStore();
       this.socket.on("chatMessage", async (messages) => {
+        const decryptedMessages = [];
+
         for (const message of messages) {
           if (message.senderUsername === this.receiver.username) {
-            const arrayBuffer = base64ToArrayBuffer(message.content);
             try {
-              const decryptedMessage = await decryptMessage(arrayBuffer);
-              console.log("Decrypted message :>> ", decryptedMessage);
+              const decryptedMessage = await giaiMaRSA({
+                ciphertext: message.content,
+                privateKey: keyStore.privateKeyJwk,
+              });
+
+              //
+              decryptedMessages.push({
+                ...message,
+                content: decryptedMessage,
+              });
             } catch (error) {
               console.log("Error decrypting message: ", error);
+              //
+              decryptedMessages.push(message);
             }
+          } else {
+            decryptedMessages.push(message);
           }
         }
-        this.oldMessages = messages;
+
+        this.oldMessages = decryptedMessages;
       });
     },
   },
