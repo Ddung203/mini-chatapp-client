@@ -1,80 +1,43 @@
 <script setup>
-  import { ref } from "vue";
-  import { useConditionStore, useMessageStore } from "../stores/index.js";
-  import postReq from "../api/post.js";
+  import { onMounted, ref } from "vue";
   import { useToast } from "primevue/usetoast";
   import notification from "../utils/notification.js";
-  import RSA from "../rsa/rsaMD.js";
+  import useAuthStore from "../stores/auth.js";
+  import useKeyStore from "../stores/key.js";
+  import useSocketStore from "../stores/socket.js";
+  import { detectMobile } from "../utils/detectMobile.js";
 
   const toast = useToast();
-  const store = useConditionStore();
-  const storeMessage = useMessageStore();
 
-  const inputUsername = ref("");
-  const inputPassword = ref("");
+  const isMobile = ref(false);
 
-  const loginHandler = async () => {
-    try {
-      if (
-        inputUsername.value.trim() === "" ||
-        inputPassword.value.trim() === ""
-      ) {
-        notification(toast, "error", "Thông báo", "Đăng nhập thất bại!", 1500);
-        return;
-      }
+  const authStore = useAuthStore();
+  const keyStore = useKeyStore();
+  const socketStore = useSocketStore();
 
-      const response = await postReq("/auth/login", {
-        username: inputUsername.value,
-        password: inputPassword.value,
-      });
+  const inputUsername = ref("cuoicuoi");
+  const inputPassword = ref("123");
+  const userOnlineList = ref([]);
 
-      if (response?.token && response?.token.length > 0) {
-        store.setLoggedIn();
-        store.setUsername(response.username);
-        localStorage.setItem("token", response.token);
-
-        // Sinh cặp khóa
-        const { publicKey, privateKey } = RSA.sinhKhoaRSA();
-
-        const res = await postReq("/auth/save-publicKey", { publicKey });
-
-        store.setParticipant1publicKey(res.publicKey);
-
-        localStorage.setItem("myPublicKey", res.publicKey);
-        localStorage.setItem("myPrivateKey", JSON.stringify(privateKey));
-
-        notification(
-          toast,
-          "success",
-          "Thông báo",
-          "Đăng nhập thành công!",
-          1500
-        );
-      }
-
-      inputUsername.value = "";
-      inputPassword.value = "";
-    } catch (e) {
-      console.log("e :>> ", e);
-      notification(toast, "error", "Error", e.response?.data?.error, 2000);
-    }
-  };
-
-  //
+  // Xử lý đăng ký
   const registerHandler = async () => {
     try {
-      if (
-        inputUsername.value.trim() === "" ||
-        inputPassword.value.trim() === ""
-      ) {
-        notification(toast, "error", "Lỗi", "Đăng ký thất bại", 2500);
+      const signInData = {
+        username: inputUsername.value.trim(),
+        password: inputPassword.value.trim(),
+      };
+      if (signInData.username === "" || signInData.password === "") {
+        notification(
+          toast,
+          "error",
+          "Lỗi",
+          "Thông tin đăng ký không được để trống!",
+          2000
+        );
         return;
       }
 
-      const response = await postReq("/auth/register", {
-        username: inputUsername.value,
-        password: inputPassword.value,
-      });
+      await authStore.register(signInData);
 
       notification(
         toast,
@@ -83,34 +46,77 @@
         "Đăng ký tài khoản thành công!",
         1000
       );
-    } catch (e) {
-      notification(toast, "error", "Thông báo", e.response?.data?.error, 1000);
+    } catch (error) {
+      notification(toast, "error", "Lỗi", error.message, 1500);
       return;
+    }
+    return;
+  };
+
+  // Xử lý đăng nhập
+  const loginHandler = async () => {
+    try {
+      const signInData = {
+        username: inputUsername.value.trim(),
+        password: inputPassword.value.trim(),
+      };
+
+      await authStore.login(signInData);
+
+      socketStore.initializeSocket();
+
+      socketStore.loginSocket(signInData.username);
+
+      userOnlineList.value = socketStore.userOnlineList.map(
+        (user) => user.username
+      );
+    } catch (error) {
+      authStore.logout();
+      notification(toast, "error", "Lỗi", error?.message, 2000);
     }
   };
 
-  //
-  const logoutHandler = async () => {
-    store.setLoggedOut();
-    storeMessage.setResetMessages();
+  //  Xử lý đăng xuất
+  const logoutHandler = async (username) => {
+    userOnlineList.value = socketStore.userOnlineList.map(
+      (user) => user.username
+    );
+    socketStore.leaveRoom();
+    socketStore.disconnectSocket(username);
+    authStore.logout();
+    socketStore.clear();
+    keyStore.clear();
   };
+
+  //
+  onMounted(() => {
+    isMobile.value = detectMobile();
+  });
 </script>
 
 <template>
   <Toast />
   <div class="fixed top-0 left-0 w-[100vw] bg-white z-40">
-    <header class="flex items-center justify-around py-3 border border-[#ccc]">
+    <header
+      class="flex flex-col lg:flex-row items-center justify-around py-3 border border-[#ccc]"
+    >
       <!--  -->
       <div class="left">
-        <p v-if="store.isLoggedIn">
-          Xin chào, <strong>{{ store.username }}</strong>
+        <p v-if="authStore.isAuthenticated">
+          Xin chào,
+          <router-link to="/about">
+            <strong>{{ authStore.username }}</strong>
+          </router-link>
+          😎
         </p>
-        <p v-if="!store.isLoggedIn">Đăng nhập hoặc đăng ký để bắt đầu ❤</p>
+        <p v-if="!authStore.isAuthenticated && !isMobile">
+          Đăng nhập hoặc đăng ký để bắt đầu ❤
+        </p>
       </div>
 
       <!--  -->
-      <div v-if="!store.isLoggedIn">
-        <form class="flex gap-4 py-2">
+      <div v-if="!authStore.isAuthenticated">
+        <form class="flex flex-col gap-4 py-2 lg:flex-row">
           <FloatLabel>
             <InputText
               id="username"
@@ -131,9 +137,9 @@
       </div>
 
       <!--  -->
-      <div class="flex gap-5 right">
+      <div class="flex gap-5 lg:flex-row right">
         <Button
-          v-if="!store.isLoggedIn"
+          v-if="!authStore.isAuthenticated"
           label="Đăng ký"
           severity="secondary"
           rounded
@@ -141,18 +147,18 @@
         />
 
         <Button
-          v-if="!store.isLoggedIn"
+          v-if="!authStore.isAuthenticated"
           label="Đăng nhập"
           rounded
           @click="loginHandler"
         />
 
         <Button
-          v-if="store.isLoggedIn"
+          v-if="authStore.isAuthenticated"
           label="Đăng xuất"
           severity="danger"
           rounded
-          @click="logoutHandler"
+          @click="logoutHandler(authStore.getUsername)"
         />
       </div>
     </header>

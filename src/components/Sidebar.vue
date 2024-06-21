@@ -1,88 +1,54 @@
 <script setup>
   import { onMounted, ref, watch } from "vue";
-  import { useConditionStore, useMessageStore } from "../stores/index.js";
-  import getReq from "../api/get.js";
-  import postReq from "../api/post.js";
+  import useAuthStore from "../stores/auth";
+  import useKeyStore from "../stores/key.js";
+  import useSocketStore from "../stores/socket";
+  import notification from "../utils/notification.js";
 
-  const store = useConditionStore();
-  const storeMessage = useMessageStore();
+  const authStore = useAuthStore();
+  const keyStore = useKeyStore();
+  const socketStore = useSocketStore();
 
-  const users = ref([]);
+  const joinRoomHandler = async (partnerUsername) => {
+    if (authStore.getUsername !== partnerUsername) {
+      socketStore.setReceiver({ username: partnerUsername });
+      await socketStore.getRoomID(authStore.getUsername, partnerUsername);
 
-  const callAPIGetUsers = async () => {
-    try {
-      const response = await getReq("/user/except");
-      users.value = response;
-    } catch (error) {
-      // console.log("error :>> ", error);
-      store.setLoggedOut();
+      socketStore.joinRoom(socketStore.roomID);
+      await keyStore.setReceiverPublicKey(partnerUsername);
+
+      console.log("oldMessages :>> ", socketStore.oldMessages);
+
+      socketStore.handleMessage();
+    } else {
+      console.log("Bạn không thể kết nối với chính mình");
+      return;
     }
+
+    return;
   };
-
-  const callAPIGetMessages = async (receiver) => {
-    const getReceiverPublicKeyResponse = await getReq(
-      `/auth/receiver-publicKey?receiver=${receiver}`
-    );
-
-    localStorage.setItem("receiverPublicKey", getReceiverPublicKeyResponse);
-
-    try {
-      storeMessage.setReceiverUsername(receiver);
-
-      const url = `/conversation/create`;
-      const res = await postReq(url, {
-        participant1Username: store.username,
-        participant2Username: receiver,
-        participant1publicKey: localStorage.getItem("myPublicKey"),
-        participant2publicKey: getReceiverPublicKeyResponse,
-      });
-
-      // console.log("res :>> ", res);
-
-      if (!!res?.id === false) return;
-
-      storeMessage.setCurRoomID(res?.id);
-    } catch (error) {
-      console.log("error 2:>> ", error);
-      store.setLoggedOut();
-    }
-  };
-
-  watch(
-    () => store.isLoggedIn,
-    (isLoggedIn) => {
-      if (isLoggedIn) {
-        callAPIGetUsers();
-      }
-    }
-  );
-
-  onMounted(() => {
-    if (store.isLoggedIn) {
-      callAPIGetUsers();
-    }
-  });
 </script>
 
 <template>
-  <div class="w-1/4 min-h-[70vh] p-4 bg-gray-200 sidebar">
+  <div class="min-h-[70vh] p-4 bg-gray-200 sidebar">
     <h2 class="mb-4 text-xl font-bold">Danh sách bạn bè</h2>
     <div class="max-h-[530px] w-[240px] overflow-y-scroll overflow-x-hidden">
       <ul
         class="flex flex-col p-3 bg-white"
-        v-if="store.isLoggedIn"
+        v-if="authStore.isAuthenticated"
       >
         <li
-          v-for="user in users"
+          v-for="user in socketStore.userOnlineList"
           :key="user.id"
           class="pb-2"
         >
           <Button
+            v-if="user.username !== authStore.getUsername"
             severity="primary"
             class="w-[200px]"
             :label="user.username"
             icon="pi pi-user"
-            @click="callAPIGetMessages(user.username)"
+            @click="joinRoomHandler(user.username)"
           />
         </li>
       </ul>

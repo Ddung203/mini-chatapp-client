@@ -6,7 +6,6 @@ const a_mu_b_mod_n = (a, b, n) => {
   if (typeof a !== "number" || typeof b !== "number" || typeof n !== "number") {
     throw new Error("Tham số đầu vào không hợp lệ");
   }
-  // console.log(`${a}^${b} mod ${n} = `);
 
   if (b === n) {
     return a % n;

@@ -163,7 +163,6 @@ const VIETNAMESE_ALPHABET =
   "0123456789!@#$%^&*()_+-=[]{},.<>/?;:'\"\\|`~"; // 220
 
 const N = VIETNAMESE_ALPHABET.length;
-// console.log("N :>> ", N);
 
 export {
   gcd,

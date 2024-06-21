@@ -1,11 +1,10 @@
 import { gcd } from "./helper.js";
 
-//! 2 - Hàm kiểm tra 2 số có phải là số nguyên tố cùng nhau hay không
 const kiemTra2soNTCungNhau = (a, b) => {
   return gcd(a, b) === 1;
 };
 
-//! 3 - Hàm tính a mũ -1 mod b (Tìm phần tử nghịch đảo)
+//! Hàm tính a mũ -1 mod b (Tìm phần tử nghịch đảo)
 const phanTuNghichDao = (a, b) => {
   if (
     typeof a !== "number" ||
@@ -25,7 +24,6 @@ const phanTuNghichDao = (a, b) => {
 
   for (let i = 1; r_i_tru_1 !== 1; i++) {
     let q = Math.floor(r_i_tru_2 / r_i_tru_1);
-    // console.log("r_i_tru_2 | r_i_tru_1 :: ", r_i_tru_2, r_i_tru_1);
 
     let tmp_r = r_i_tru_1;
     r_i_tru_1 = r_i_tru_2 - q * r_i_tru_1;
