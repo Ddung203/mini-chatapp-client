@@ -40,7 +40,8 @@ const useSocketStore = defineStore("socket", {
     },
 
     initializeSocket() {
-      this.socket = io("http://localhost:8181/");
+      // this.socket = io("http://localhost:3001/");
+      this.socket = io("https://mini-chatapp-server.onrender.com/");
 
       this.socket.on("connect", () => {
         console.log("ID:: ", this.socket.id);

@@ -1,13 +1,21 @@
 import axios from "axios";
 
 const http = axios.create({
-  baseURL: "http://localhost:8181/v2/api", // Base URL for all requests
+  baseURL: "https://mini-chatapp-server.onrender.com/v2/api",
   headers: {
-    "Content-type": "application/json", // Default headers
+    "Content-type": "application/json",
   },
-  timeout: 10000, // Timeout after 10 seconds
-  withCredentials: true, // Allow sending cookies when cross-origin requests
+  timeout: 10000,
+  withCredentials: true,
 });
+// const http = axios.create({
+//   baseURL: "http://localhost:3001/v2/api",
+//   headers: {
+//     "Content-type": "application/json",
+//   },
+//   timeout: 10000,
+//   withCredentials: true,
+// });
 
 // Function to add token to request header
 const addTokenToRequest = (config) => {
